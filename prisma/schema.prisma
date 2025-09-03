@@ -13,3 +13,10 @@ model users {
   winnings   Int?    @default(0)
   picture_id String? @db.Text
 }
+
+model test_lab {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique(map: "email") @db.VarChar(255)
+  completed   Boolean?  @default(false)
+  finished_at DateTime? @db.Timestamp(0)
+}

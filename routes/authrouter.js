@@ -4,6 +4,7 @@ require("dotenv").config();
 const axios = require("axios");
 const prisma = require('../prisma')
 const jwt = require('jsonwebtoken');
+const authMiddleware = require("../middleware/jwtauth");
 
 router.get("/google",(req,res)=>{
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID.toString()}&redirect_uri=${process.env.REDIRECT_URI.toString()}&response_type=code&scope=profile email`;
@@ -65,6 +66,16 @@ router.get("/google/callback", async (req, res) => {
         })
     }
 
+})
+
+router.post("/logout", authMiddleware, (req, res) => {
+    res.clearCookie("access_token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
 })
 
 module.exports = {
