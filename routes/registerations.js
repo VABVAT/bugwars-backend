@@ -25,24 +25,31 @@ router.post("/", authMiddleware, async (req, res) => {
         return;
     }
     const email = useremail;
-    const user = await prisma.test_lab.findUnique({where: {email:useremail}})
+    const user = await prisma.lab_users.findUnique({where: {username:useremail}})
     if (!user) {
-        await prisma.test_lab.create({
+        await prisma.lab_users.create({
             data: {
-                email: email.toString(),
-                completed: false
+                username: email.toString(),
+                hasStarted: true
             }
         })
-        res.status(200).json({
+        return res.status(200).json({
             error: false,
             message: "User registered successfully"
         })
+    }else{
+        await prisma.lab_users.update({
+            where: { username: req.user.email },
+            data:  { hasStarted: true },
+        });
     }
     res.status(200).json({
         error: true,
         message: "User has already registered for the competition... See you soon"
     })
 })
+
+
 
 module.exports = {
     registerRouter: router
