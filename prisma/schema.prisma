@@ -22,9 +22,10 @@ model test_lab {
 }
 
 model lab_users {
-  id          Int      @id @default(autoincrement())
-  username    String   @unique(map: "lab_users_email_key") @db.VarChar(255)
-  isAdmin     Boolean? @default(false)
-  hasStarted  Boolean? @default(false)
-  hasFinished Boolean? @default(false)
+  id          Int       @id @default(autoincrement())
+  username    String    @unique(map: "lab_users_email_key") @db.VarChar(255)
+  isAdmin     Boolean?  @default(false)
+  hasStarted  Boolean?  @default(false)
+  hasFinished Boolean?  @default(false)
+  finished_at DateTime? @db.DateTime(0)
 }

@@ -24,8 +24,8 @@ router.post("/", authMiddleware, async (req, res) => {
     if(answer === "merejaisebhondukeliyeyeduniyanahibaniplshelp"){
         await prisma.lab_users.update({
             where: { username: req.user.email },              // must be UNIQUE (e.g., id, email, etc.)
-            data:  { hasFinished: true },
-        });
+            data:  { hasFinished: true, finished_at: new Date().toISOString() },
+        })
         return res.status(200).json({
             success: true
         })
