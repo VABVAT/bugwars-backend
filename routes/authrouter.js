@@ -6,8 +6,10 @@ const prisma = require('../prisma')
 const jwt = require('jsonwebtoken');
 const authMiddleware = require("../middleware/jwtauth");
 
+const redirectUrl = process.env.ENVIROMENT === "dev" ? process.env.REDIRECT_URI : process.env.PROD_REDIRECT_URI;
+
 router.get("/google",(req,res)=>{
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID.toString()}&redirect_uri=${process.env.REDIRECT_URI.toString()}&response_type=code&scope=profile email`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID.toString()}&redirect_uri=${redirectUrl}&response_type=code&scope=profile email`;
     res.redirect(url);
 })
 
@@ -22,7 +24,7 @@ router.get("/google/callback", async (req, res) => {
                 client_id: process.env.GOOGLE_CLIENT_ID.toString(),
                 client_secret: process.env.GOOGLE_CLIENT_SECRET.toString(),
                 code,
-                redirect_uri: process.env.REDIRECT_URI.toString(),
+                redirect_uri: redirectUrl,
                 grant_type: 'authorization_code',
             })
         })
