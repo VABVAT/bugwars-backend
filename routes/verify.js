@@ -36,10 +36,16 @@ router.post("/", authMiddleware, async (req, res) => {
         position =  lastFinishedUser.finishPosition + 1;
     }
     if(answer === "merejaisebhondukeliyeyeduniyanahibaniplshelp"){
-        await prisma.lab_users.update({
-            where: { username: req.user.email },              // must be UNIQUE (e.g., id, email, etc.)
-            data:  { hasFinished: true, finished_at: new Date().toISOString(), finishPosition: position },
-        })
+
+        if(user.hasFinished == true || user.hasFinished == 1){
+            // todo add some logic here
+        }else{
+            await prisma.lab_users.update({
+                where: { username: req.user.email },              // must be UNIQUE (e.g., id, email, etc.)
+                data:  { hasFinished: true, finished_at: new Date().toISOString(), finishPosition: position },
+            })
+        }
+
         return res.status(200).json({
             success: true
         })
