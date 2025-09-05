@@ -8,7 +8,7 @@ require("dotenv").config();
 
 router.use(cors(
     {
-        origin: process.env.ENVIROMENT === "dev" ? process.env.FRONTEND_BASE_URL : process.env.FRONTEND_PROD_URL,
+        origin: true,
         credentials: true
     }));
 

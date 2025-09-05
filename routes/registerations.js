@@ -7,12 +7,12 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = require("../middleware/jwtauth");
 const cors = require("cors");
 
-
 router.use(cors(
     {
-        origin: process.env.ENVIROMENT === "dev" ? process.env.FRONTEND_BASE_URL : process.env.FRONTEND_PROD_URL,
+        origin: true,
         credentials: true
     }));
+
 
 router.post("/", authMiddleware, async (req, res) => {
     const useremail = req.user.email;
