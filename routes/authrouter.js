@@ -9,7 +9,13 @@ const authMiddleware = require("../middleware/jwtauth");
 const redirectUrl = process.env.ENVIROMENT === "dev" ? process.env.REDIRECT_URI : process.env.PROD_REDIRECT_URI;
 
 router.get("/google",(req,res)=>{
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID.toString()}&redirect_uri=${redirectUrl}&response_type=code&scope=profile email`;
+    const encodedRedirect = encodeURIComponent(redirectUrl);
+    const url = `https://accounts.google.com/o/oauth2/v2/auth` +
+        `?client_id=${encodeURIComponent(process.env.GOOGLE_CLIENT_ID)}` +
+        `&redirect_uri=${encodedRedirect}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent('profile email')}`;
+
     res.redirect(url);
 })
 
