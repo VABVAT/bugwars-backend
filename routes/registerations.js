@@ -10,7 +10,7 @@ const cors = require("cors");
 
 router.use(cors(
     {
-        origin: process.env.FRONTEND_BASE_URL,
+        origin: process.env.ENVIROMENT === "dev" ? process.env.FRONTEND_BASE_URL : process.env.FRONTEND_PROD_URL,
         credentials: true
     }));
 

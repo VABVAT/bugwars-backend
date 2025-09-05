@@ -57,7 +57,8 @@ router.get("/google/callback", async (req, res) => {
         const token = jwt.sign(payload, secret, options);
 
         res.cookie("access_token", token, {httpOnly:true, sameSite: 'lax', secure: false});
-        res.redirect(`${process.env.FRONTEND_BASE_URL}/bug`);
+        const base = process.env.ENVIROMENT === "dev" ? process.env.FRONTEND_BASE_URL : process.env.FRONTEND_PROD_URL
+        res.redirect(`${base}/bug`);
 
     }
     catch(err){
