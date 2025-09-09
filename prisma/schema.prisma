@@ -12,6 +12,7 @@ model users {
   email      String  @unique(map: "email") @db.VarChar(255)
   winnings   Int?    @default(0)
   picture_id String? @db.Text
+  nickName   String? @db.VarChar(120)
 }
 
 model test_lab {
@@ -29,4 +30,5 @@ model lab_users {
   hasFinished    Boolean?  @default(false)
   finished_at    DateTime? @db.DateTime(0)
   finishPosition Int?      @default(-1)
+  labId          Int?
 }

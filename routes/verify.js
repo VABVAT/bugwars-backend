@@ -19,30 +19,35 @@ router.post("/", authMiddleware, async (req, res) => {
     const body = req.body;
     const answer = body.answer;
     const user = await prisma.lab_users.findUnique({where: {username: req.user.email}})
-    if(!user || !user.hasStarted === true) {
-        return res.status(400).json({ error: "Start the lab before attempting to answer" });
+    if (!user || !user.hasStarted === true) {
+        return res.status(400).json({error: "Start the lab before attempting to answer"});
     }
     if (!lab || !answer) {
-        return res.status(400).json({ error: "Incorrect answer" });
+        return res.status(400).json({error: "Incorrect answer"});
     }
     let position = -1;
     const lastFinishedUser = await prisma.lab_users.findFirst({
-        where: { finished_at: { not: null }, hasFinished: true, finishPosition: { not: null}, username: {not: req.user.email} },
-        orderBy: { finished_at: "desc" },
+        where: {
+            finished_at: {not: null},
+            hasFinished: true,
+            finishPosition: {not: null},
+            username: {not: req.user.email}
+        },
+        orderBy: {finished_at: "desc"},
     });
-    if(!lastFinishedUser){
+    if (!lastFinishedUser) {
         position = 1;
-    }else{
-        position =  lastFinishedUser.finishPosition + 1;
+    } else {
+        position = lastFinishedUser.finishPosition + 1;
     }
-    if(answer === "merejaisebhondukeliyeyeduniyanahibaniplshelp"){
+    if (answer === "merejaisebhondukeliyeyeduniyanahibaniplshelp") {
 
-        if(user.hasFinished == true || user.hasFinished == 1){
+        if (user.hasFinished == true || user.hasFinished == 1) {
             // todo add some logic here
-        }else{
+        } else {
             await prisma.lab_users.update({
-                where: { username: req.user.email },              // must be UNIQUE (e.g., id, email, etc.)
-                data:  { hasFinished: true, finished_at: new Date().toISOString(), finishPosition: position },
+                where: {username: req.user.email},              // must be UNIQUE (e.g., id, email, etc.)
+                data: {hasFinished: true, finished_at: new Date().toISOString(), finishPosition: position},
             })
         }
 
@@ -55,24 +60,60 @@ router.post("/", authMiddleware, async (req, res) => {
     })
 })
 
+router.post("/leaderboard", authMiddleware, async (req, res) => {
+    const {lab} = req.query;
+    console.log(req.query);
+    if (!lab) {
+        return res.status(400).json({error: "Missing or invalid 'lab' query param"});
+    }
+    let user = await prisma.users.findUnique({
+        where: {email: req.user.email},
+    })
+    console.log(user.nickName);
+    const hasUserName = user.nickName != null
+    if (!user) {
+        return res.status(400).json({error: "Missing user"});
+    }
+
+    const labId = Number(lab);
+    if (Number.isNaN(labId) || labId <= 0) {
+        return res.status(400).json({error: "'lab' must be a positive integer"});
+    }
+
+    const TOP_LIMIT = 200; // limit results for safety; adjust as needed
+
+    const leaderboard = await prisma.$queryRaw`
+        SELECT lu.id, u.nickName AS username, lu.finishPosition, lu.finished_at
+        FROM lab_users lu
+                 INNER JOIN users u ON lu.username = u.email
+        WHERE lu.labId = ${labId}
+          AND lu.hasFinished = true
+          AND u.nickName IS NOT NULL
+        ORDER BY lu.finishPosition ASC
+            LIMIT ${TOP_LIMIT};
+    `;
+
+    return res.json({ leaderboard,  hasUserName});
+})
+
 router.get("/stats", authMiddleware, async (req, res) => {
     const {lab} = req.query;
 
     if (!lab) {
-        return res.status(400).json({ error: "Missing or invalid 'lab' query param" });
+        return res.status(400).json({error: "Missing or invalid 'lab' query param"});
     }
     let user = await prisma.lab_users.findUnique({
         where: {username: req.user.email},
     })
 
-        if (!user) {
-            user = await prisma.lab_users.create({
-                data: {
-                    username: req.user.email.toString(),
-                    hasStarted: false
-                }
-            })
-        }
+    if (!user) {
+        user = await prisma.lab_users.create({
+            data: {
+                username: req.user.email.toString(),
+                hasStarted: false
+            }
+        })
+    }
 
     const result = await prisma.lab_users.findMany({
         where: {

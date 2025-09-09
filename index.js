@@ -20,6 +20,7 @@ app.use("/api/profile", profileRouter)
 app.use("/api/register", registerRouter);
 app.use("/api/verify", verifyRouter)
 
+
 app.get("/", (req, res) => {
     res.status(200).send("Welcome to our accounts.");
 })
