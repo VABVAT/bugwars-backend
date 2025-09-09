@@ -13,6 +13,46 @@ router.use(cors(
     }));
 
 
+router.post("/set-nickname", authMiddleware , async (req, res) => {
+        const name = req.body.nickname;
+        const email = req.user.email;
+        const user = await prisma.users.findUnique({
+            where: {
+                email: email
+            }
+        })
+    if (!user) {
+        return res.status(401).json({
+            error: "User not found"
+        })
+    }
+    if (user.nickName && user.nickName === name) {
+        return res.status(200).json({ success: true, message: "Nickname unchanged.", name });
+    }
+
+    const existing = await prisma.users.findFirst({
+        where: {
+            nickName: name,
+            // exclude current user (in case nickName is same for current user)
+            NOT: { email: email },
+        },
+    });
+
+    if (existing) {
+        return res
+            .status(409)
+            .json({ success: false, message: "Nickname already taken. Please choose another." });
+    }
+
+    const updated = await prisma.users.update({
+        where: {email},
+        data: {nickName: name},
+    })
+
+    return res.status(200).json({ success: true, message: "Nickname set.", user: updated });
+})
+
+
 router.post("/", authMiddleware, async (req, res) => {
     const {lab} = req.query
     const Lab = Number(lab);

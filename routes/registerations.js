@@ -74,7 +74,6 @@ router.post("/start", authMiddleware, async (req, res) => {
         })
         return;
     }
-    const email = useremail;
     const user = await prisma.lab_users.findUnique({
         where: {
             username_labId: {
