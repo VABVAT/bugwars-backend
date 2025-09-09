@@ -65,6 +65,59 @@ router.post("/", authMiddleware, async (req, res) => {
 // todo this has to be correct entirely
 router.post("/start", authMiddleware, async (req, res) => {
     const useremail = req.user.email;
+    const lab = req.body.lab
+    const Lab = Number(lab);
+    if (!lab || Number.isNaN(Lab) || Lab <= 0) {
+        return res.status(400).json({error: "'lab' must be a positive integer"});
+    }
+    if (!useremail) {
+        res.status(401).json({
+            error: true,
+            message: "Invalid email or password"
+        })
+        return;
+    }
+    const user = await prisma.lab_users.findUnique({
+        where: {
+            username_labId: {
+                username: useremail,
+                labId: Lab,
+            },
+        },
+    });
+    if (!user) {
+        await prisma.lab_users.create(
+            {
+                data: {
+                    username: useremail,
+                    labId: Lab,
+                    hasStarted: true,
+                }
+            })
+    } else {
+        await prisma.lab_users.update({
+            where: {
+                username_labId: {
+                    username: req.user.email,
+                    labId: Lab,
+                },
+            },
+            data: {
+                hasStarted: true,
+            },
+        });
+    }
+
+    res.status(200).json({
+        error: true,
+        message: "User has already registered for the competition... See you soon"
+    })
+})
+
+
+// todo copy correctly from above
+router.post("/strict-start", authMiddleware, async (req, res) => {
+    const useremail = req.user.email;
     const labNumber = req.body.lab
 
     if (!useremail) {

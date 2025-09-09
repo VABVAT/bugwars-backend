@@ -49,7 +49,7 @@ router.post("/set-nickname", authMiddleware , async (req, res) => {
         data: {nickName: name},
     })
 
-    return res.status(200).json({ success: true, message: "Nickname set.", user: updated });
+    return res.status(200).json({ success: true, message: "Nickname set." });
 })
 
 
@@ -151,6 +151,27 @@ router.post("/leaderboard", authMiddleware, async (req, res) => {
     return res.json({leaderboard, hasUserName});
 })
 
+router.get("/registrations", authMiddleware, async (req, res) => {
+    const {lab} = req.query;
+    const labId = Number(lab);
+    console.log(lab);
+    if (!lab || Number.isNaN(labId) || labId <= 0) {
+        return res.status(400).json({error: "'lab' must be a positive integer"});
+    }
+
+
+    const result = await prisma.lab_users.findMany({
+        where: {
+            hasStarted: false,
+            labId: labId
+        }
+    });
+
+    return res.status(200).json({
+        registered: result.length,
+    })
+})
+
 router.get("/stats", authMiddleware, async (req, res) => {
     const {lab} = req.query;
     const labId = Number(lab);
@@ -167,9 +188,6 @@ router.get("/stats", authMiddleware, async (req, res) => {
         }
     })
 
-    if (!user) {
-        return res.status(400).json({});
-    }
 
     const result = await prisma.lab_users.findMany({
         where: {
@@ -183,13 +201,22 @@ router.get("/stats", authMiddleware, async (req, res) => {
             labId: labId
         }
     });
+    if (user){
+        return res.status(200).json({
+            Started: result.length,
+            Finished: result2.length,
+            hasFinished: user.hasFinished,
+            finishingPosition: user.finishPosition
+        })
+    }else{
+        return res.status(200).json({
+            Started: result.length,
+            Finished: result2.length,
+            hasFinished: false,
+            finishingPosition:-1
+        });
+    }
 
-    return res.status(200).json({
-        Started: result.length,
-        Finished: result2.length,
-        hasFinished: user.hasFinished,
-        finishingPosition: user.finishPosition
-    })
 })
 
 module.exports = {
