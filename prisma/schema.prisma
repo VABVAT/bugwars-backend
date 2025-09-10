@@ -12,7 +12,7 @@ model users {
   email      String  @unique(map: "email") @db.VarChar(255)
   winnings   Int?    @default(0)
   picture_id String? @db.Text
-  nickName   String? @db.VarChar(120)
+  nickName   String? @unique(map: "unique_nickname") @db.VarChar(120)
 }
 
 model test_lab {
