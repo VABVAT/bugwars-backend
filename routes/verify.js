@@ -44,7 +44,7 @@ router.post("/set-nickname", authMiddleware , async (req, res) => {
             .json({ success: false, message: "Nickname already taken. Please choose another." });
     }
 
-    const updated = await prisma.users.update({
+    await prisma.users.update({
         where: {email},
         data: {nickName: name},
     })
