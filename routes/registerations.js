@@ -13,8 +13,14 @@ router.use(cors(
         credentials: true
     }));
 
-
 router.post("/", authMiddleware, async (req, res) => {
+    const {lab} = req.query;
+    console.log(req.query);
+    const Lab = Number(lab);
+    if (!lab || Number.isNaN(Lab) || Lab <= 0) {
+        return res.status(400).json({error: "'lab' must be a positive integer"});
+    }
+
     const useremail = req.user.email;
 
     if (!useremail) {
@@ -24,31 +30,135 @@ router.post("/", authMiddleware, async (req, res) => {
         })
         return;
     }
-    const email = useremail;
-    const user = await prisma.lab_users.findUnique({where: {username:useremail}})
+    const user = await prisma.lab_users.findUnique({
+        where: {
+            username_labId: {
+                username: useremail,
+                labId: Lab,
+            },
+        },
+    });
+    console.log(user);
     if (!user) {
-        await prisma.lab_users.create({
-            data: {
-                username: email.toString(),
-                hasStarted: true
-            }
-        })
+        await prisma.lab_users.create(
+            {
+                data: {
+                    username: useremail,
+                    labId: Lab,
+                    hasStarted: false,
+                }
+            })
+    }else{
         return res.status(200).json({
             error: false,
-            message: "User registered successfully"
+            message: "User has already registered for the competition... See you soon"
         })
-    }else{
+    }
+
+    return res.status(200).json({
+        error: false,
+        message: "Registration successful"
+    })
+})
+
+
+// todo this has to be correct entirely
+router.post("/start", authMiddleware, async (req, res) => {
+    const useremail = req.user.email;
+    const lab = req.body.lab
+    const Lab = Number(lab);
+    if (!lab || Number.isNaN(Lab) || Lab <= 0) {
+        return res.status(400).json({error: "'lab' must be a positive integer"});
+    }
+    if (!useremail) {
+        res.status(401).json({
+            error: true,
+            message: "Invalid email or password"
+        })
+        return;
+    }
+    const user = await prisma.lab_users.findUnique({
+        where: {
+            username_labId: {
+                username: useremail,
+                labId: Lab,
+            },
+        },
+    });
+    if (!user) {
+        await prisma.lab_users.create(
+            {
+                data: {
+                    username: useremail,
+                    labId: Lab,
+                    hasStarted: true,
+                }
+            })
+    } else {
         await prisma.lab_users.update({
-            where: { username: req.user.email },
-            data:  { hasStarted: true },
+            where: {
+                username_labId: {
+                    username: req.user.email,
+                    labId: Lab,
+                },
+            },
+            data: {
+                hasStarted: true,
+            },
         });
     }
+
     res.status(200).json({
         error: true,
         message: "User has already registered for the competition... See you soon"
     })
 })
 
+
+// todo copy correctly from above
+router.post("/strict-start", authMiddleware, async (req, res) => {
+    const useremail = req.user.email;
+    const labNumber = req.body.lab
+
+    if (!useremail) {
+        res.status(401).json({
+            error: true,
+            message: "Invalid email or password"
+        })
+        return;
+    }
+    const user = await prisma.lab_users.findUnique({
+        where: {
+            username_labId: {
+                username: useremail,
+                labId: labNumber,
+            },
+        },
+    });
+    if (!user) {
+        return res.status(400).json({
+            error: true,
+            message: "You did not register on time"
+        })
+    } else {
+        await prisma.lab_users.update({
+            where: {
+                username_labId: {
+                    username: req.user.email,
+                    labId: labNumber,
+                },
+            },
+            data: {
+                hasStarted: true,
+            },
+        });
+    }
+
+    res.status(200).json({
+        error: true,
+        message: "User has already registered for the competition... See you soon"
+    })
+})
 
 
 module.exports = {
