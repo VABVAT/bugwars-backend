@@ -87,8 +87,13 @@ router.post("/", authMiddleware, async (req, res) => {
     } else {
         position = lastFinishedUser.finishPosition + 1;
     }
+    const originalanswer = await prisma.questions_answers.findUnique({where: {
+        labid: Lab
+        }})
     let isCorrect = false;
     if (answer === "merejaisebhondukeliyeyeduniyanahibaniplshelp" && Lab === 1) {
+        isCorrect = true;
+    }else if(originalanswer.answers.toString() === answer) {
         isCorrect = true;
     }
     if (isCorrect) {
