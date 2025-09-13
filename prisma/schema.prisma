@@ -34,3 +34,8 @@ model lab_users {
 
   @@unique([username, labId])
 }
+
+model questions_answers {
+  labid   Int     @unique(map: "labid") @default(autoincrement())
+  answers String? @db.Text
+}
