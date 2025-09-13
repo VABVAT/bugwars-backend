@@ -167,7 +167,6 @@ router.get("/registrations", authMiddleware, async (req, res) => {
 
     const result = await prisma.lab_users.findMany({
         where: {
-            hasStarted: false,
             labId: labId
         }
     });
